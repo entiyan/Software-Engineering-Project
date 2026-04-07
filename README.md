@@ -130,3 +130,4 @@ java -cp out jdm.Main data
 | 40–47   | Mild      |
 | 28–39   | Moderate  |
 | < 28    | Severe    |
+
