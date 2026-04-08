@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "java",
+        "name": "MainApp",
+        "request": "launch",
+        "mainClass": "MainApp",
+        "projectName": "PROJECT_1dda974a"
+      },
+      {
+        "type": "java",
+        "name": "Run JavaFX",
+        "request": "launch",
+        "mainClass": "jdm.fx.MainApp",
+        "vmArgs": "--module-path \"C:/Users/Пользователь/Desktop/Foundation Year/PROJECT/javafx-sdk-26/lib\" --add-modules javafx.controls,javafx.fxml"
+      }
+    ]
+  }
