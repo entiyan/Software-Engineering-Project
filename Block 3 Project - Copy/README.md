@@ -1,49 +1,62 @@
 # JDM Patient Management System
 
-A Java CLI application for managing Juvenile Dermatomyositis (JDM) patient data,
-built with object-oriented design principles.
+A JavaFX desktop application for managing Juvenile Dermatomyositis (JDM) patient data,
+built with object-oriented design principles and layered architecture.
 
 ---
 
 ## Project Structure
 
 ```
-jdm_app/
-├── build_and_run.sh              ← compile + run script
-├── data/                         ← CSV data files (your dataset)
-│   ├── Patient.csv
+Block 3 Project - Copy/
+├── build.ps1                     ← PowerShell build & run script
+├── build_and_run.sh              ← Unix/Linux build & run script
+├── README.md                     ← This file
+├── data/                         ← CSV data files
+│   ├── CMAS.csv
 │   ├── LabResult.csv
 │   ├── LabResultGroup.csv
-│   ├── LabResults_EN_.csv
+│   ├── LabResults(EN).csv
 │   ├── Measurement.csv
-│   └── 1775593554312_CMAS.csv
-└── src/main/java/jdm/
-    ├── Main.java                 ← entry point
-    ├── model/                    ← domain objects
-    │   ├── SystemUser.java       ← interface + Doctor/PatientUser impls
+│   └── Patient.csv
+├── javafx-sdk-26/                ← Bundled JavaFX SDK (JDK 17+)
+│   ├── bin/
+│   ├── legal/
+│   └── lib/
+└── src/jdm/
+    ├── fx/                       ← JavaFX controllers & UI
+    │   ├── MainApp.java          ← Application entry point
+    │   ├── LoginController.java
+    │   ├── DoctorController.java
+    │   ├── PatientController.java
+    │   └── SceneManager.java      ← Scene navigation management
+    ├── model/                    ← Domain objects
+    │   ├── SystemUser.java       ← User interface (Doctor/Patient implementations)
+    │   ├── DoctorUser.java
+    │   ├── PatientUser.java
     │   ├── UserFactory.java
     │   ├── Patient.java
-    │   ├── CmasEntry.java
+    │   ├── Appointment.java
     │   ├── LabResult.java
     │   ├── LabResultGroup.java
-    │   ├── Measurement.java
-    │   └── Appointment.java
-    ├── service/                  ← business logic
-    │   ├── DataStore.java        ← singleton in-memory repository
-    │   ├── DataLoader.java       ← CSV → domain object loading
-    │   ├── LabResultService.java
-    │   └── AppointmentService.java
-    ├── ui/                       ← CLI screens
-    │   ├── LoginScreen.java
-    │   ├── DoctorDashboard.java
-    │   ├── PatientDashboard.java
-    │   ├── LabResultsScreen.java
-    │   ├── CmasScreen.java
-    │   ├── AppointmentsScreen.java
-    │   └── InputHelper.java
-    └── util/
-        ├── CsvParser.java        ← parses all CSV formats
-        └── Display.java          ← ANSI colour helpers
+    │   ├── CmasEntry.java
+    │   └── Measurement.java
+    ├── service/                  ← Business logic & data management
+    │   ├── DataStore.java        ← Singleton in-memory repository
+    │   ├── DataLoader.java       ← CSV loading & initialization
+    │   ├── SessionContext.java   ← Session & user management
+    │   ├── UserFactory.java      ← User creation factory
+    │   ├── LabResultService.java ← Lab result operations
+    │   ├── AppointmentService.java ← Appointment operations
+    │   ├── ClinicalAnalyticsService.java ← Clinical analysis
+    │   └── ReportingService.java ← Report generation
+    ├── util/                     ← Utility classes
+    │   ├── CsvParser.java        ← CSV parsing
+    │   └── DataPaths.java        ← Data path management
+    └── FXML files (in src/)
+        ├── login.fxml            ← Login screen UI
+        ├── doctor.fxml           ← Doctor dashboard UI
+        └── patient.fxml          ← Patient dashboard UI
 ```
 
 ---
@@ -51,24 +64,27 @@ jdm_app/
 ## Requirements
 
 - Java JDK 17 or higher
-- Terminal with ANSI colour support (any modern terminal)
+- JavaFX SDK 26 (bundled in project)
+- Windows, macOS, or Linux
 
 ---
 
 ## Build & Run
 
-```bash
-chmod +x build_and_run.sh
-./build_and_run.sh
+**Navigate to the project directory and run:**
+
+```powershell
+cd "Block 3 Project - Copy"
+powershell -ExecutionPolicy Bypass -File .\build.ps1 -run
 ```
 
-Or manually:
+Or manually compile and run:
 
-```bash
-mkdir -p out
-find src -name "*.java" > sources.txt
-javac --release 17 -d out @sources.txt
-java -cp out jdm.Main data
+```powershell
+mkdir out
+$sources = Get-ChildItem -Path src -Recurse -Filter "*.java" | ForEach-Object { $_.FullName }
+javac --release 17 -encoding UTF-8 -d out --module-path "javafx-sdk-26\lib" --add-modules javafx.controls,javafx.fxml @sources
+java --module-path "javafx-sdk-26\lib" --add-modules javafx.controls,javafx.fxml -cp out jdm.fx.MainApp data
 ```
 
 ---
@@ -92,33 +108,26 @@ java -cp out jdm.Main data
 
 ## Features by Role
 
-### Doctor
-- View all patients with latest CMAS severity status
-- Browse lab results grouped by category (Blood Chemistry, Hematology, etc.)
-- View all measurements for any lab result
-- **Add** new lab result types to a patient record
-- **Edit** measurement values
-- **Delete** lab results or individual measurements
-- Schedule / cancel / complete appointments for any patient
-- View all upcoming appointments across all patients
+### Doctor Dashboard
+- **View Patients**: Browse all patients with latest CMAS severity status
+- **Lab Results Management**: 
+  - Browse lab results grouped by category (Blood Chemistry, Hematology, etc.)
+  - View all measurements for any lab result
+  - Add new lab result types to a patient's record
+  - Edit and delete measurement values
+- **Appointment Management**: 
+  - Schedule new appointments for patients
+  - View all upcoming appointments across all patients
+  - Cancel or complete appointments
+- **Clinical Analytics**: Generate clinical reports and analysis
 
-### Patient
-- View own lab results (read-only)
-- View own CMAS history with severity labels and ASCII trend chart
-- View and schedule own appointments
-
----
-
-## OOP Design Highlights
-
-| Principle       | Where applied |
-|-----------------|---------------|
-| Interface       | `SystemUser` — defines role contract; `DoctorUser` / `PatientUser` implement it |
-| Factory         | `UserFactory.createDoctor()` / `createPatient()` |
-| Singleton       | `DataStore` — single in-memory data repository |
-| Encapsulation   | All models expose only necessary getters; lists returned as unmodifiable views |
-| Separation of concerns | `model` ↔ `service` ↔ `ui` layers |
-| Polymorphism    | UI screens accept `SystemUser`; behaviour differs by role without casting |
+### Patient Dashboard
+- **View Lab Results**: Browse own lab results (read-only)
+- **CMAS History**: View CMAS trend history with severity labels
+- **Appointment Management**: 
+  - View and manage own appointments
+  - Schedule new appointments
+- **Clinical Reports**: Access personal clinical reports
 
 ---
 
